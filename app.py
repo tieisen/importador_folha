@@ -151,8 +151,8 @@ def rotina(arquivo) -> tuple[pd.DataFrame,pd.DataFrame]:
     return dados_cabecalho, lista_lctos
 
 if __name__ == "__main__":
-    st.set_page_config(page_title="importador-folha", layout="wide")
-    st.title("importador-folha")
+    st.set_page_config(page_title="Importador da folha", layout="wide")
+    st.title("💰 Importador de folha de pagamento")
 
     if 'arquivo' not in st.session_state:
         st.session_state.arquivo = None
