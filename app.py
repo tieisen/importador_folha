@@ -33,7 +33,7 @@ def busca_funcionarios(_snk:Sankhya,token:str,dados:list[dict]) -> list[dict]:
 
     import time
     for d in dados:
-        d['codigo_sankhya'] = asyncio.run(_snk.busca_parceiro(token=token,texto=d.get('nome')))
+        d['codigo_parceiro'] = asyncio.run(_snk.busca_parceiro(token=token,texto=d.get('nome')))
         time.sleep(0.5)
     return dados
 
@@ -41,7 +41,7 @@ def busca_banco(_snk:Sankhya,token:str,dados:dict) -> dict:
     """Busca o código Sankhya da conta bancária com base nos dados bancários fornecidos."""
 
     retorno = asyncio.run(_snk.busca_conta_bancaria(token=token,dados_bancarios=dados))
-    dados['codigo_sankhya'], dados['codigo_empresa'] = retorno.get('codctabcoint'), retorno.get('codemp')
+    dados['codigo_conta'], dados['codigo_empresa'] = retorno.get('codctabcoint'), retorno.get('codemp')
     return dados
 
 def converte_dataframe(conteudo:list[dict]) -> pd.DataFrame:
@@ -60,7 +60,7 @@ def converte_dataframe(conteudo:list[dict]) -> pd.DataFrame:
 def filtra_colunas(dataframe:pd.DataFrame) -> pd.DataFrame:
     """Filtra as colunas do DataFrame para exibir apenas as necessárias."""
 
-    return dataframe[['Nome','Codigo sankhya','Valor pagamento','Data pagamento','Referencia','Natureza','Inicio ferias','Fim ferias']]
+    return dataframe[['Nome','Codigo parceiro','Valor pagamento','Data pagamento','Referencia','Natureza','Inicio ferias','Fim ferias']]
 
 def formata_cabecalho(header:dict,trailer:dict) -> pd.DataFrame:
     """Formata o cabeçalho e trailer em um DataFrame do Pandas."""
@@ -75,7 +75,7 @@ def formata_cabecalho(header:dict,trailer:dict) -> pd.DataFrame:
     cols = [c.replace("_"," ").capitalize() for c in cols]
     df.columns = cols
     df = df.rename(columns={"Nome":"Empresa"})    
-    return df[['Empresa','Codigo empresa','Banco','Conta bancaria','Codigo sankhya','Qtde registros','Valor total']]
+    return df[['Empresa','Codigo empresa','Banco','Conta bancaria','Codigo conta','Qtde registros','Valor total']]
 
 def enviar_dados(dados_bancarios:dict,dados_lancamentos:list[dict],tipo_lcto:str) -> int:
     """Envia os dados formatados para a Sankhya e retorna o número de registros realizados."""
@@ -160,19 +160,27 @@ if __name__ == "__main__":
         st.session_state.dados_cabecalho = pd.DataFrame()
     if 'lista_lctos' not in st.session_state:
         st.session_state.lista_lctos = pd.DataFrame()
+    
+    with open("ajuda.md", "r", encoding="utf-8") as f:
+        md = f.read()
+    with st.sidebar:
+        st.header("Como utilizar:")
+        st.markdown(md)
 
     st.session_state.arquivo = st.file_uploader("Selecione um arquivo", type=["txt"])
     if st.session_state.arquivo:
         st.session_state.dados_cabecalho, st.session_state.lista_lctos = rotina(st.session_state.arquivo)
 
         if not all([isinstance(st.session_state.dados_cabecalho,bool),isinstance(st.session_state.lista_lctos,bool)]):
+            st.subheader("Cabeçalho")
             st.table(st.session_state.dados_cabecalho)
+
+            st.subheader("Lançamentos")
             naturezas = ["Salário","Férias"]
             opcoes_tipo_lcto = ["Salário","Adiantamento"]
             tipo_lcto = st.pills(label="Tipo de lançamento", options=opcoes_tipo_lcto, default=opcoes_tipo_lcto[0], selection_mode="single")
             referencia:str = (pd.to_datetime(st.session_state.lista_lctos.at[0,'Data pagamento'],format='%d/%m/%Y') - pd.DateOffset(months=1)).strftime('%m/%Y') if tipo_lcto == "Salário" else pd.to_datetime(st.session_state.lista_lctos.at[0,'Data pagamento'],format='%d/%m/%Y').strftime('%m/%Y')
-            st.session_state.lista_lctos['Referencia'] = referencia
-
+            st.session_state.lista_lctos['Referencia'] = referencia            
             df = st.data_editor(
                 st.session_state.lista_lctos,
                 hide_index=True,
