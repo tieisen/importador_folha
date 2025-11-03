@@ -8,5 +8,6 @@
     - Revisar a Natureza dos lançamentos.
     - Se a Natureza for Férias, informar as datas de Inicio e Fim (opcional).
 4. Clicar em Enviar e aguardar a confirmação.
+5. Os lançamentos estarão lançados no Sankhya como despesa pendente.
 
 > Obs.: O importador reconhece *somente arquivos CNAB240 dos bancos Itaú e Bradesco*. Para outros padrões e/ou bancos, favor abrir um chamado para o setor de TI com um arquivo de modelo em anexo para adicionarmos ao importador.

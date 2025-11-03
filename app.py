@@ -152,7 +152,7 @@ def rotina(arquivo) -> tuple[pd.DataFrame,pd.DataFrame]:
 
 if __name__ == "__main__":
     st.set_page_config(page_title="Importador da folha", layout="wide")
-    st.title("💰 Importador de folha de pagamento")
+    st.title("💰 Importador de folha de pagamento - BASE TESTE")
 
     if 'arquivo' not in st.session_state:
         st.session_state.arquivo = None
@@ -164,7 +164,7 @@ if __name__ == "__main__":
     with open("ajuda.md", "r", encoding="utf-8") as f:
         md = f.read()
     with st.sidebar:
-        st.header("Como utilizar:")
+        st.header("ℹ️ Como utilizar:")
         st.markdown(md)
 
     st.session_state.arquivo = st.file_uploader("Selecione um arquivo", type=["txt"])
