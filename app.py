@@ -215,5 +215,5 @@ if __name__ == "__main__":
         else:
             st.warning("Dados do arquivo não puderam ser extraídos. Verifique se o arquivo é válido.")
     if not st.session_state.arquivo and any([not st.session_state.dados_cabecalho.empty,not st.session_state.lista_lctos.empty]):
-        st.session_state.dados_cabecalho, st.session_state.lista_lctos = None, None
+        st.session_state.dados_cabecalho, st.session_state.lista_lctos = pd.DataFrame(), pd.DataFrame()
         rotina.clear()
