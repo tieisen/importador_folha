@@ -6,16 +6,13 @@ Este projeto é uma aplicação web desenvolvida com Streamlit para automatizar 
 
 - **Interface Web Intuitiva**: Interface amigável construída com Streamlit para facilitar o upload e processamento dos arquivos.
 - **Parsing de CNAB240**: Suporte para arquivos de retorno de pagamento no formato CNAB240 dos bancos Bradesco (237) and Itaú (341).
+- **Parsing de planilha Excel**: Suporte para planilhas Excel com dados do pagamento do vale alimentação (VR).
 - **Integração com Sankhya**:
   - Autenticação segura na API do Sankhya.
   - Busca e validação automática da conta bancária da empresa.
-  - Busca automática do código de parceiro (funcionário) no Sankhya a partir do nome.
-- **Revisão de Dados**: Permite que o usuário revise e edite os dados antes de enviá-los, podendo ajustar a natureza do lançamento (Salário, Férias), referência e datas.
+  - Busca automática do código de parceiro (funcionário) no Sankhya a partir do nome e/ou CPF.
+- **Revisão de Dados**: Permite que o usuário revise e edite os dados antes de enviá-los, podendo ajustar o código de parceiro,a natureza do lançamento (Salário, Férias), referência e datas.
 - **Lançamento de Despesas**: Formata e envia os pagamentos para serem registrados como lançamentos financeiros no Sankhya.
-
-## 🚀 Começando
-
-Siga estas instruções para configurar e executar o projeto em seu ambiente local.
 
 ### Pré-requisitos
 
@@ -26,7 +23,7 @@ Siga estas instruções para configurar e executar o projeto em seu ambiente loc
 
 1.  Clone o repositório para sua máquina local:
     ```bash
-    git clone <URL_DO_SEU_REPOSITORIO>
+    git clone https://github.com/tieisen/importador_folha.git
     cd importador-folha
     ```
 
@@ -51,7 +48,7 @@ Use o arquivo `.env.example` como modelo.
 Com o ambiente configurado e as dependências instaladas, execute o seguinte comando no terminal:
 
 ```bash
-streamlit run app.py
+streamlit run __main__.py
 ```
 
-A aplicação será aberta em seu navegador padrão. Agora você pode fazer o upload do seu arquivo CNAB240 e iniciar o processo de importação.
+A aplicação será aberta em seu navegador padrão. Agora você pode fazer o upload do seu arquivo CNAB240 ou Excel e iniciar o processo de importação.
