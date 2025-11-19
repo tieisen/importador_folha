@@ -48,7 +48,7 @@ Use o arquivo `.env.example` como modelo.
 Com o ambiente configurado e as dependências instaladas, execute o seguinte comando no terminal:
 
 ```bash
-streamlit run __main__.py
+streamlit run main.py
 ```
 
 A aplicação será aberta em seu navegador padrão. Agora você pode fazer o upload do seu arquivo CNAB240 ou Excel e iniciar o processo de importação.
