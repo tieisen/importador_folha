@@ -7,7 +7,7 @@ from src.app import App
 
 if __name__ == "__main__":
     st.set_page_config(page_title="Importador mvt. financeira", layout="wide")
-    st.title("Importador de movimentação financeira - BASE TESTE")
+    st.title("Importador de movimentação financeira")
     
     app = App()
 
