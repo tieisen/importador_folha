@@ -1,10 +1,25 @@
-class ParserCnab240:
+class Cnab240:
 
     def __init__(self):
         pass
 
+    def ler_arquivo(self, arquivo) -> list[str]:
+        """
+            Lê o conteúdo do arquivo enviado pelo usuário e retorna uma lista de linhas.
+                :param arquivo: Arquivo enviado pelo usuário.
+                :return: Lista de linhas do arquivo.
+        """
+
+        conteudo = arquivo.read().decode("utf-8")
+        return conteudo.split('\n')
+
     def padroniza_campos(self,conteudo:dict) -> dict:
-        """Padroniza o nome dos campos de CNAB240 de bancos diferentes."""
+        """
+            Padroniza o nome dos campos de CNAB240 de bancos diferentes.
+                :param conteudo: Conteúdo do arquivo.
+                :return dict: Dicionário contendo headers, detalhes e trailers do arquivo CNAB.
+        """
+
         header_arquivo:dict = conteudo.get('header_arquivo', {})
         header_lote:dict = conteudo.get('header_lote', [{}])[0]
         detalhes:list = conteudo.get('detalhes', [])
@@ -156,8 +171,33 @@ class ParserCnab240:
 
         return retorno
 
+    def extrai_conteudo(self, conteudo:list[str]) -> dict:
+        """
+            Extrai o conteúdo do arquivo CNAB240 utilizando o parser adequado conforme o banco identificado.
+                :param conteudo: Lista com o conteúdo do arquivo.
+                :return dict: Dicionário com o conteúdo do arquivo padronizado.
+        """
+
+        extracao:dict={}
+
+        if conteudo[0][0:3] == '237':
+            extracao = self.bradesco(conteudo=conteudo)
+        elif conteudo[0][0:3] == '341':
+            extracao = self.itau(conteudo=conteudo)
+        else:
+            extracao = {}
+
+        extracao = self.padroniza_campos(extracao)
+
+        return extracao
+
     def itau(self,caminho_arquivo:str=None,conteudo:list=None) -> dict:
-        """Lê um arquivo CNAB240 Itaú e retorna dicionário com todos os registros."""
+        """
+            Lê um arquivo CNAB240 Itaú e retorna dicionário com todos os registros.
+                :param caminho_arquivo: Caminho do arquivo CNAB240.
+                :param conteudo: Conteúdo do arquivo CNAB240.
+                :return dict: Dicionário com todos os registros.
+        """
 
         if not any([caminho_arquivo,conteudo]):
             return {}
@@ -357,7 +397,12 @@ class ParserCnab240:
         return registros
 
     def bradesco(self,caminho_arquivo:str=None,conteudo:list=None) -> dict:
-        """Lê um arquivo CNAB240 Bradesco e retorna dicionário com todos os registros."""
+        """
+            Lê um arquivo CNAB240 Bradesco e retorna dicionário com todos os registros.
+                :param caminho_arquivo: Caminho do arquivo CNAB240.
+                :param conteudo: Conteúdo do arquivo CNAB240.
+                :return dict: Dicionário com todos os registros.
+        """
 
         if not any([caminho_arquivo,conteudo]):
             return {}
