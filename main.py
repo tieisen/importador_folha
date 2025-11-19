@@ -55,35 +55,33 @@ if __name__ == "__main__":
                 for i in range(len(st.session_state.dados_cabecalho.columns)):
                     col1.write(f"{st.session_state.dados_cabecalho.columns[i]}:")
                     col2.write(st.session_state.dados_cabecalho.iloc[0,i])
-
-            # Tabela da importação da folha
+            
             if app.tipo_rotina == 'folha':
+                # Configura a tabela da importação da folha
                 naturezas = ["Salário","Férias"]
                 opcoes_tipo_lcto = ["Salário","Adiantamento"]
-                with st.expander("**Lançamentos**", expanded=True):
-                    tipo_lcto = st.pills(label="Tipo de lançamento", options=opcoes_tipo_lcto, default=opcoes_tipo_lcto[0], selection_mode="single")
-                    referencia:str = (pd.to_datetime(st.session_state.lista_lctos.at[0,'Data pagamento'],format='%d/%m/%Y') - pd.DateOffset(months=1)).strftime('%m/%Y') if tipo_lcto == "Salário" else pd.to_datetime(st.session_state.lista_lctos.at[0,'Data pagamento'],format='%d/%m/%Y').strftime('%m/%Y')
-                    st.session_state.lista_lctos['Referencia'] = referencia                    
-                    df = st.data_editor(
-                        st.session_state.lista_lctos,
-                        hide_index=True,
-                        column_config={
+                tipo_lcto = st.pills(label="Tipo de lançamento", options=opcoes_tipo_lcto, default=opcoes_tipo_lcto[0], selection_mode="single")
+                referencia:str = (pd.to_datetime(st.session_state.lista_lctos.at[0,'Data pagamento'],format='%d/%m/%Y') - pd.DateOffset(months=1)).strftime('%m/%Y') if tipo_lcto == "Salário" else pd.to_datetime(st.session_state.lista_lctos.at[0,'Data pagamento'],format='%d/%m/%Y').strftime('%m/%Y')
+                st.session_state.lista_lctos['Referencia'] = referencia                    
+                column_config={
                             "Nome": st.column_config.TextColumn(),
                             "Codigo sankhya": st.column_config.NumberColumn(),
                             "Valor pagamento": st.column_config.NumberColumn(format="R$ %.2f"),
                             "Natureza": st.column_config.SelectboxColumn(options=naturezas,required=True),
                             "Inicio ferias": st.column_config.DateColumn(help="Preencha apenas para lançamentos de Férias",format="DD/MM/YYYY"),
                             "Fim ferias": st.column_config.DateColumn(help="Preencha apenas para lançamentos de Férias",format="DD/MM/YYYY")
-                        })
-            
-            # Tabela da importação do VR
+                        }
             elif app.tipo_rotina == 'vr':
-                with st.expander("**Lançamentos**", expanded=True):
+                # Configura a tabela da importação do VR
+                column_config={"Valor do benefício": st.column_config.NumberColumn(format="R$ %.2f")}
 
-                    df = st.data_editor(
-                        st.session_state.lista_lctos,
-                        hide_index=True,
-                        column_config={"Valor do benefício": st.column_config.NumberColumn(format="R$ %.2f")})
+            # Exibe a tabela
+            with st.expander("**Lançamentos**", expanded=True):
+                df = st.data_editor(
+                    st.session_state.lista_lctos,
+                    hide_index=True,
+                    num_rows="dynamic",
+                    column_config=column_config)
 
             # Executa o envio dos dados
             btn_enviar = st.button("Enviar",use_container_width=True)
