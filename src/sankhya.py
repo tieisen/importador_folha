@@ -21,6 +21,9 @@ class Sankhya:
         self.tiptit_folha = int(os.getenv('TIPTIT_FOLHA'))
         self.tiptit_vr = int(os.getenv('TIPTIT_VR'))
         self.top = int(os.getenv('TOP'))
+        self.conta_bancaria_rs = int(os.getenv('CONTA_BANCARIA_RS'))
+        self.conta_bancaria_sc = int(os.getenv('CONTA_BANCARIA_SC'))
+        self.conta_bancaria_pr = int(os.getenv('CONTA_BANCARIA_PR'))
 
     async def logar(self) -> dict:
         """
@@ -124,11 +127,11 @@ class Sankhya:
         if cnpj:
             match cnpj:
                 case '14.008.597/0001-25': # Matriz
-                    codigo_conta = 20
+                    codigo_conta = self.conta_bancaria_rs
                 case '14.008.597/0004-78': # SC
-                    codigo_conta = 24
+                    codigo_conta = self.conta_bancaria_sc
                 case '14.008.597/0003-97': # PR
-                    codigo_conta = 11
+                    codigo_conta = self.conta_bancaria_pr
                 case _:
                     return result
             
