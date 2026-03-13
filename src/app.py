@@ -164,11 +164,11 @@ class App:
         time.sleep(1)
 
         my_bar.progress(int(100/3*1), text="Enviando lançamentos...")
-        token = await snk.logar()
+        token_snk = await snk.logar()
         time.sleep(1)
 
         my_bar.progress(int(100/3*2), text="Enviando lançamentos...")
-        registros_realizados:int = await snk.registrar_despesas(token=token.get('bearerToken'),lancamentos=payload)
+        registros_realizados:int = await snk.registrar_despesas(token=token_snk,lancamentos=payload)
         time.sleep(1)
 
         my_bar.progress(int(100/3*3), text="Concluído!")
@@ -215,17 +215,17 @@ class App:
 
         my_bar.progress(int(100/7*2), text="Validando dados bancários...")
         snk = Sankhya()
-        token = await snk.logar()
-        if not token:
+        token_snk = await snk.logar()
+        if not token_snk:
             my_bar.empty()
             st.error("Não foi possível autenticar na Sankhya.")
             return None, None
         time.sleep(1)
-        dados['header_arquivo'] = await _self.busca_banco(snk, token.get('bearerToken'), dados.get('header_arquivo'))
+        dados['header_arquivo'] = await _self.busca_banco(snk, token_snk, dados.get('header_arquivo'))
         time.sleep(1)
 
         my_bar.progress(int(100/7*3), text="Buscando dados dos funcionários...")
-        lista_lctos = await _self.busca_funcionarios(snk, token.get('bearerToken'), dados.get('detalhes'))
+        lista_lctos = await _self.busca_funcionarios(snk, token_snk, dados.get('detalhes'))
         time.sleep(1)
 
         my_bar.progress(int(100/7*4), text="Finalizando...")
@@ -268,17 +268,17 @@ class App:
 
         my_bar.progress(int(100/7*2), text="Validando dados bancários...")
         snk = Sankhya()
-        token = await snk.logar()
-        if not token:
+        token_snk = await snk.logar()
+        if not token_snk:
             my_bar.empty()
             st.error("Não foi possível autenticar na Sankhya.")
             return None, None
         time.sleep(1)
-        dados_banco = await _self.busca_banco(snk, token.get('bearerToken'), cnpj=dados_cabecalho.get('CNPJ'))
+        dados_banco = await _self.busca_banco(snk, token_snk, cnpj=dados_cabecalho.get('CNPJ'))
         time.sleep(1)
 
         my_bar.progress(int(100/7*3), text="Buscando dados dos funcionários...")
-        lista_lctos = await _self.busca_funcionarios(snk, token.get('bearerToken'), dados_conteudo)
+        lista_lctos = await _self.busca_funcionarios(snk, token_snk, dados_conteudo)
         time.sleep(1)
 
         my_bar.progress(int(100/7*4), text="Finalizando...")

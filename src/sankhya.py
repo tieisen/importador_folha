@@ -1,6 +1,4 @@
-import os
-import re
-import requests
+import os, re, requests
 import pandas as pd
 from dotenv import load_dotenv
 load_dotenv()
@@ -11,7 +9,10 @@ class Sankhya:
         self.url_login = os.getenv('URL_LOGIN')
         self.url_busca = os.getenv('URL_BUSCA')
         self.url_registro = os.getenv('URL_REGISTRO')
+        self.url_auth = os.getenv('URL_AUTH_SNK')
         self.token = os.getenv('TOKEN')
+        self.x_token = os.getenv('XTOKEN')
+        self.app_id = os.getenv('APP_ID')
         self.appkey = os.getenv('APPKEY')
         self.username = os.getenv('USERNAME_API')
         self.password = os.getenv('PASSWORD') 
@@ -25,7 +26,7 @@ class Sankhya:
         self.conta_bancaria_sc = int(os.getenv('CONTA_BANCARIA_SC'))
         self.conta_bancaria_pr = int(os.getenv('CONTA_BANCARIA_PR'))
 
-    async def logar(self) -> dict:
+    async def logar_old(self) -> dict:
         """
             Realiza o login na API da Sankhya e retorna o token de autenticação.
                 :return dict: Dicionário contendo o token de autenticação.
@@ -59,6 +60,47 @@ class Sankhya:
 
         except Exception as e:
             print(f"ERRO AO FAZER LOGIN NA API --> {e}")
+
+        finally:
+            pass
+
+        return auth
+
+    async def logar(self) -> str:
+        """
+            Realiza o login na API da Sankhya e retorna o token de autenticação.
+                :return dict: Dicionário contendo o token de autenticação.
+        """
+
+        auth:str=''
+
+        # Header da requisição
+        header:dict = {
+            'xToken': self.x_token
+        }
+        
+        url:str = self.url_auth+f"/{self.app_id}"
+
+        try:
+            res = requests.post(
+                url=url,
+                headers=header
+            )        
+            
+            if res.status_code != 200:
+                msg = f"Código {res.status_code} ao obter token: {res.text}"
+                raise Exception(msg)
+            
+            if 'token' not in res.json():
+                msg = "Token de acesso não encontrado na resposta"
+                raise Exception(msg)
+
+            auth = res.json().get('token')
+
+        except Exception as e:
+            print(f"ERRO AO FAZER LOGIN NA API --> {e}")
+            print(f"URL: {url}")
+            print(f"HEADER: {header}")
 
         finally:
             pass

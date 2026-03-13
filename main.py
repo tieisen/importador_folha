@@ -1,7 +1,5 @@
+import os, time, asyncio
 import streamlit as st
-import os
-import time
-import asyncio
 import pandas as pd
 from src.app import App
 
