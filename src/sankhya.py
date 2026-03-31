@@ -26,46 +26,6 @@ class Sankhya:
         self.conta_bancaria_sc = int(os.getenv('CONTA_BANCARIA_SC'))
         self.conta_bancaria_pr = int(os.getenv('CONTA_BANCARIA_PR'))
 
-    async def logar_old(self) -> dict:
-        """
-            Realiza o login na API da Sankhya e retorna o token de autenticação.
-                :return dict: Dicionário contendo o token de autenticação.
-        """
-
-        auth:dict={}
-
-        # Header da requisição
-        header:dict = {
-            'token': self.token,
-            'appkey': self.appkey,
-            'username': self.username,
-            'password': self.password
-        }
-
-        try:
-            res = requests.post(
-                url=self.url_login,
-                headers=header
-            )        
-            
-            if res.status_code != 200:
-                msg = f"Código {res.status_code} ao obter token: {res.text}"
-                raise Exception(msg)
-            
-            if not res.json().get('bearerToken'):
-                msg = "Token de acesso não encontrado na resposta"
-                raise Exception(msg)
-
-            auth = res.json()
-
-        except Exception as e:
-            print(f"ERRO AO FAZER LOGIN NA API --> {e}")
-
-        finally:
-            pass
-
-        return auth
-
     async def logar(self) -> str:
         """
             Realiza o login na API da Sankhya e retorna o token de autenticação.
