@@ -208,7 +208,7 @@ class Layout(Arquivo):
         linhas.append(self.trailerLote)
         linhas.append(self.trailerArquivo)
 
-        self.conteudo = '\n'.join(linhas) + '\n'
+        self.conteudo = '\r\n'.join(linhas) + '\r\n'
         return True
 
     def salvarArquivo(self, nomeArquivo:str=None) -> bool:
@@ -217,7 +217,7 @@ class Layout(Arquivo):
             raise ValueError("Nenhum conteúdo para salvar")
         nomeArquivo = nomeArquivo if nomeArquivo else "REM"+datetime.now().strftime("%d%m")
         self.nomeArquivo = nomeArquivo+self.headerArquivo[72:73]+".REM"
-        with open(self.nomeArquivo,"w") as f:
+        with open(self.nomeArquivo,"w",newline='') as f:
             f.write(self.conteudo)
         self.limparDados()
         return True

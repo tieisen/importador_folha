@@ -52,13 +52,14 @@ if __name__ == "__main__":
         if app.tipo_rotina == 'olist':
             if empresa:
                 my_bar, nome_arquivo = rotina(st.session_state.arquivo,empresa)
-                download_btn = st.download_button(
-                    label="Baixar arquivo",
-                    data=open(nome_arquivo,"r").read(),
-                    file_name=nome_arquivo,
-                    mime="text/csv",
-                    icon=":material/download:",
-                )
+                with open(nome_arquivo, "rb") as f:
+                    download_btn = st.download_button(
+                        label="Baixar arquivo",
+                        data=f,
+                        file_name=nome_arquivo,
+                        mime="text/plain",
+                        icon=":material/download:",
+                    )
                 
                 if download_btn:
                     my_bar.empty()
