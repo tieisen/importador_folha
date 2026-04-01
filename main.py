@@ -51,8 +51,8 @@ if __name__ == "__main__":
 
         if app.tipo_rotina == 'olist':
             if empresa:
-                my_bar, nome_arquivo = rotina(st.session_state.arquivo,empresa)
-                with open(nome_arquivo, "rb") as f:
+                my_bar, caminho_arquivo, nome_arquivo = rotina(st.session_state.arquivo,empresa)
+                with open(caminho_arquivo, "rb") as f:
                     download_btn = st.download_button(
                         label="Baixar arquivo",
                         data=f,
@@ -66,6 +66,8 @@ if __name__ == "__main__":
                     st.cache_resource.clear()
                     st.session_state.arquivo = None
                     empresa=None
+                    if os.path.exists(caminho_arquivo):
+                        os.remove(caminho_arquivo)                    
 
             # Limpa o cache quando o arquivo importado é removido
             if not st.session_state.arquivo:
