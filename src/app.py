@@ -314,74 +314,22 @@ class App:
                 :return dados_cabecalho: Dicionário contendo os dados do cabeçalho.
                 :return lista_lctos: Lista de dicionários contendo os dados dos funcionários.
         """
-        
-        def validaDadosBancariosEmpresa(empresa:Literal['storya', 'outbeauty','compre']) -> dict:
-            if empresa == 'storya':
-                return {
-                    "codigoBanco" : 341,
-                    "nomeBanco" : "BANCO ITAU SA",
-                    "cnpjEmpresa" : "22.923.308/0001-41",
-                    "agencia" : 3396,
-                    "conta" : 99445,
-                    "dac" : 5,
-                    "nomeEmpresa" : "STORYA LTDA",
-                    "enderecoEmpresa" : "R CARLOS TREIN FILHO",
-                    "numeroEndereco" : "1063",
-                    "complementoEndereco" : "PARTE SUPERIOR",
-                    "cidadeEmpresa" : "Santa Cruz do Sul",
-                    "cepEmpresa" : "96.810-225",
-                    "ufEmpresa" : "RS",                      
-                }
-            elif empresa == 'outbeauty':
-                return {
-                    "codigoBanco" : 341,
-                    "nomeBanco" : "BANCO ITAU SA",
-                    "cnpjEmpresa" : "34.653.282/0001-48",
-                    "agencia" : 3396,
-                    "conta" : 99444,
-                    "dac" : 8,
-                    "nomeEmpresa" : "OUTBEAUTY COMERCIO DE PRODUTOS DE BELEZA LTDA",
-                    "enderecoEmpresa" : "AV FORTUNATA LUCIA ROSSO GIASSI",
-                    "numeroEndereco" : "374",
-                    "complementoEndereco" : "GALPAO",
-                    "cidadeEmpresa" : "Içara",
-                    "cepEmpresa" : "88.820-000",
-                    "ufEmpresa" : "SC",                      
-                }
-            elif empresa == 'compre':
-                return {
-                    "codigoBanco" : 341,
-                    "nomeBanco" : "BANCO ITAU SA",
-                    "cnpjEmpresa" : "65.357.518/0001-22",
-                    "agencia" : 3396,
-                    "conta" : 98921,
-                    "dac" : 6,
-                    "nomeEmpresa" : "COMPRE BATOM LTDA",
-                    "enderecoEmpresa" : "Rua das Carmelitas",
-                    "numeroEndereco" : "5064",
-                    "complementoEndereco" : "",
-                    "cidadeEmpresa" : "Curitiba",
-                    "cepEmpresa" : "81.730-050",
-                    "ufEmpresa" : "PR",                      
-                }
-            else:
-                raise ValueError("Empresa inválida. Escolha entre 'storya', 'outbeauty' ou 'compre'.")
 
         my_bar = st.progress(0, text="Carregando arquivo...")
-        dados_empresa:dict = validaDadosBancariosEmpresa(empresa)
         arquivo = Arquivo()
+        arquivo.validaDadosBancariosEmpresa(empresa)        
         arquivo.carregarArquivo(arquivoCarregado,arquivoCarregado.type)
         time.sleep(1)
         
         my_bar.progress(int(100/3*1), text="Gerando remessa...")
         layout = Layout()
-        layout.comporHeaderArquivo(HeaderArquivo(**dados_empresa))
-        layout.comporHeaderLote(HeaderLoteO(**dados_empresa))
+        layout.comporHeaderArquivo(HeaderArquivo(**arquivo.dados_bancarios))
+        layout.comporHeaderLote(HeaderLoteO(**arquivo.dados_bancarios))
 
         for i in range(len(arquivo.data)):        
             layout.comporDetalhe(
                 DetalheO(**{        
-                    "codigoBanco" : dados_empresa.get('codigoBanco'),
+                    "codigoBanco" : arquivo.dados_bancarios.get('codigoBanco'),
                     "numeroRegistro" : i+1,
                     "codigoBarras" : arquivo.data.at[i,'chave_pix_codigo_boleto'],
                     "nome" : arquivo.data.at[i,'fornecedor'],
@@ -394,7 +342,7 @@ class App:
 
         layout.comporTrailerLote(
             TrailerLoteO(**{
-                "codigoBanco" : dados_empresa.get('codigoBanco'),
+                "codigoBanco" : arquivo.dados_bancarios.get('codigoBanco'),
                 "totalQtdeRegistros" : arquivo.data.shape[0]+2,
                 "totalValorPgtos" : round(arquivo.data['valor_documento'].sum(),2)
             })
@@ -402,7 +350,7 @@ class App:
 
         layout.comporTrailerArquivo(
             TrailerArquivo(**{
-                "codigoBanco" : dados_empresa.get('codigoBanco'),
+                "codigoBanco" : arquivo.dados_bancarios.get('codigoBanco'),
                 "totalQtdeLotes" : 1,
                 "totalQtdeRegistros" : 4+arquivo.data.shape[0]
             })
@@ -415,4 +363,4 @@ class App:
         
         my_bar.progress(int(100/3*3), text="Concluído!")
         
-        return my_bar, layout.nomeArquivo
+        return my_bar, layout.caminhoArquivo, layout.nomeArquivo

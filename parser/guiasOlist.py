@@ -1,11 +1,15 @@
-import re, unicodedata
+import re, unicodedata, json, os
 import pandas as pd
 from datetime import datetime
+from typing import Literal
 from schema.Itau240 import HeaderArquivo, TrailerArquivo, HeaderLoteO, TrailerLoteO, DetalheO
+
+DIR_REMESSAS = "remessas"
 
 class Arquivo:
     def __init__(self):
         self.data:pd.DataFrame = None
+        self.dados_bancarios:dict = None
 
     def normalizarColunas(self,texto: str) -> str:
         if not texto:
@@ -55,7 +59,25 @@ class Arquivo:
             data['valor_documento'] = data['valor_documento'].astype(float)
         
         self.data = data
-        return data    
+        return data
+
+    def validaDadosBancariosEmpresa(self, empresa:Literal['storya', 'outbeauty','compre']) -> dict:
+        
+        if empresa not in ['storya', 'outbeauty','compre']:
+            raise ValueError("Empresa inválida. Escolha entre 'storya', 'outbeauty' ou 'compre'.")
+        
+        dados_bancarios:list[dict] = []
+        with open("json/.dados_empresas.json","r") as f:
+            dados_bancarios = json.load(f)
+        
+        if not dados_bancarios:
+            raise ValueError("Arquivo de dados bancários não encontrado.")
+        
+        for d in dados_bancarios:
+            if d.get('empresa') == empresa:
+                self.dados_bancarios = d.get('dados')
+                return d.get('dados')
+        raise ValueError(f"Dados bancários para a empresa {empresa} não encontrados.")    
     
 class Layout(Arquivo):
     
@@ -68,6 +90,7 @@ class Layout(Arquivo):
         self.detalhes:list[str] = []
         self.conteudo:str = None
         self.nomeArquivo:str = None
+        self.caminhoArquivo:str = None
         
     def __str__(self) -> str:
         return self.conteudo if self.conteudo else ""
@@ -217,7 +240,9 @@ class Layout(Arquivo):
             raise ValueError("Nenhum conteúdo para salvar")
         nomeArquivo = nomeArquivo if nomeArquivo else "REM"+datetime.now().strftime("%d%m")
         self.nomeArquivo = nomeArquivo+self.headerArquivo[72:73]+".REM"
-        with open(self.nomeArquivo,"w",newline='') as f:
+        os.makedirs(DIR_REMESSAS,exist_ok=True)
+        self.caminhoArquivo = os.path.join(DIR_REMESSAS,self.nomeArquivo)
+        with open(self.caminhoArquivo,"w",newline='') as f:
             f.write(self.conteudo)
         self.limparDados()
         return True
@@ -229,4 +254,6 @@ class Layout(Arquivo):
         self.trailerLote = None
         self.detalhes = []
         self.conteudo = None
+        self.data = None
+        self.dados_bancarios = None
         return True
