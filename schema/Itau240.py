@@ -115,6 +115,122 @@ def corrigirBarcode(barcode: str) -> str:
     codigo_final = codigo[:3] + str(dv_geral) + codigo[4:]
     return codigo_final
 
+def validar_segmento_o(linha_digitavel: str, valor_informado: float | None = None) -> dict:
+    
+    def modulo10(numero: str) -> int:
+        soma = 0
+        peso = 2
+
+        for n in reversed(numero):
+            calc = int(n) * peso
+            if calc >= 10:
+                calc = (calc // 10) + (calc % 10)
+            soma += calc
+            peso = 1 if peso == 2 else 2
+
+        resto = soma % 10
+        return (10 - resto) if resto != 0 else 0
+
+    def corrigir_linha_digitavel(linha: str) -> dict:
+        resultado = {
+            "valida": True,
+            "corrigida": linha,
+            "alteracoes": []
+        }
+
+        if len(linha) != 48 or not linha.isdigit():
+            raise ValueError("Linha digitável inválida (formato)")
+
+        campos = [linha[i:i+12] for i in range(0, 48, 12)]
+        campos_corrigidos = []
+
+        for idx, campo in enumerate(campos, start=1):
+            dados = campo[:-1]
+            dv_informado = int(campo[-1])
+            dv_calculado = modulo10(dados)
+
+            if dv_informado != dv_calculado:
+                resultado["valida"] = False
+                resultado["alteracoes"].append({
+                    "campo": idx,
+                    "dv_original": dv_informado,
+                    "dv_corrigido": dv_calculado
+                })
+                campo_corrigido = dados + str(dv_calculado)
+            else:
+                campo_corrigido = campo
+
+            campos_corrigidos.append(campo_corrigido)
+
+        linha_corrigida = "".join(campos_corrigidos)
+        resultado["corrigida"] = linha_corrigida
+
+        return resultado
+
+    def linha_digitavel_to_barcode(linha: str) -> str:
+        res = corrigir_linha_digitavel(linha)
+
+        linha_corrigida = res["corrigida"]
+
+        campos = [linha_corrigida[i:i+12] for i in range(0, 48, 12)]
+        codigo_barras = "".join(c[:-1] for c in campos)
+
+        if len(codigo_barras) != 44:
+            raise ValueError("Erro na conversão para código de barras")
+
+        return codigo_barras
+
+    def extrair_valor_codigo_barras(codigo: str) -> float:
+        tipo_valor = codigo[2]
+
+        valor_str = codigo[4:15]
+
+        if tipo_valor in ["6", "8"]:
+            # valor em reais (2 casas decimais)
+            return int(valor_str) / 100
+
+        elif tipo_valor in ["7", "9"]:
+            # sem valor definido
+            return 0.0
+
+        else:
+            raise ValueError(f"Tipo de valor inválido: {tipo_valor}")    
+    
+    resultado = {
+        "valido": True,
+        "erros": [],
+        "barcode": None,
+        "valor_codigo": None
+    }
+
+    try:
+        barcode = linha_digitavel_to_barcode(linha_digitavel)
+        resultado["barcode"] = barcode
+
+        if len(barcode) != 44:
+            raise ValueError("Código de barras inválido (tamanho)")
+
+        if not barcode.isdigit():
+            raise ValueError("Código de barras contém caracteres inválidos")
+
+        if barcode[0] != "8":
+            raise ValueError("Não é arrecadação (deve iniciar com 8)")
+
+        valor_codigo = extrair_valor_codigo_barras(barcode)
+        resultado["valor_codigo"] = valor_codigo
+
+        if valor_informado is not None:
+            if round(valor_codigo, 2) != round(valor_informado, 2):
+                raise ValueError(
+                    f"Valor divergente: código={valor_codigo} informado={valor_informado}"
+                )
+
+    except Exception as e:
+        resultado["valido"] = False
+        resultado["erros"].append(str(e))
+
+    return resultado
+
 class HeaderArquivo(BaseModel):
     
     codigoBanco:int
@@ -372,11 +488,15 @@ class DetalheO(BaseModel):
         
     @field_validator("codigoBarras")
     def valida_codigoBarras(cls, v):
-        if len(str(v).strip()) < 3:
+        # if len(str(v).strip()) < 3:
+        #     raise ValueError("Código de barras inválido")
+        # v = corrigirBarcode(v)
+        aux = validar_segmento_o(v)
+        if not aux['valido']:
             raise ValueError("Código de barras inválido")
-        v = corrigirBarcode(v)
-        if not v:
-            raise ValueError("Código de barras inválido")
+        v = aux['barcode']
+        # if not v:
+        #     raise ValueError("Código de barras inválido")
         return normalizarString(v,48)
         
     @field_validator("nome")
