@@ -1,4 +1,4 @@
-from parser import cnab240, excel_vr
+from parser import cnab240, excel
 from src.sankhya import Sankhya
 import time
 import pandas as pd
@@ -187,9 +187,12 @@ class App:
                 :param arquivo: Arquivo enviado pelo usuário
                 :return rotina: Rotina correspondente ao tipo de arquivo.    
         """
+        
+        print("tipo de arquivo: ",arquivo.type)
+        print("arquivo: ",arquivo)
 
         rotina = None
-        if arquivo.type == 'application/vnd.ms-excel':
+        if (arquivo.type == 'application/vnd.ms-excel') or ('xls' in arquivo.name):
             self.tipo_rotina = 'vr'
             rotina = self.rotina_vr
         if arquivo.type == 'text/plain':
@@ -262,7 +265,7 @@ class App:
                 :return lista_lctos: Lista de dicionários contendo os dados dos funcionários.
         """
         
-        parser = excel_vr.ExcelVr()
+        parser = excel.ExcelVr()
         
         my_bar = st.progress(0, text="Carregando arquivo...")
         cabecalho,data_credito,conteudo = parser.ler_arquivo(arquivo)
