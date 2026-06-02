@@ -240,6 +240,7 @@ class Ecommerce:
 
     def processa_dados_shopee(self,df) -> pd.DataFrame:
         
+        lista_dfs = []
         relatorio_summary = df.get("Summary")
         relatorio_renda = df.get("Renda")
         relatorio_adjustment = df.get("Adjustment")
@@ -256,14 +257,18 @@ class Ecommerce:
                 self.loja = "Shopee"
             case _:
                 raise ValueError(f"Não foi possível identificar a empresa a partir do relatório. Valor encontrado: {relatorio_summary.iloc[4,1]}")
-            
-        df_ajuste = self.tratar_dados_ajustment(relatorio_adjustment)
-        df_ajuste = df_ajuste.apply(lambda x: self.extrai_valores_adjustment(x),axis=1)        
+        
+        if relatorio_adjustment:
+            df_ajuste = self.tratar_dados_ajustment(relatorio_adjustment)
+            df_ajuste = df_ajuste.apply(lambda x: self.extrai_valores_adjustment(x),axis=1)        
+            lista_dfs.append(df_ajuste)
 
-        df_renda = self.tratar_dados_renda(relatorio_renda)
-        df_renda = df_renda.apply(lambda x: self.extrai_valores_renda(x),axis=1)
+        if relatorio_renda:
+            df_renda = self.tratar_dados_renda(relatorio_renda)
+            df_renda = df_renda.apply(lambda x: self.extrai_valores_renda(x),axis=1)
+            lista_dfs.append(df_renda)
 
-        self.data = self.unifica_lista_lctos([df_renda,df_ajuste])
+        self.data = self.unifica_lista_lctos(lista_dfs)
         return  
     
     def processa_dados_blz(self,df) -> pd.DataFrame:
