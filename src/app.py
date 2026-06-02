@@ -187,9 +187,6 @@ class App:
                 :param arquivo: Arquivo enviado pelo usuário
                 :return rotina: Rotina correspondente ao tipo de arquivo.    
         """
-        
-        print("tipo de arquivo: ",arquivo.type)
-        print("arquivo: ",arquivo)
 
         rotina = None
         if (arquivo.type == 'application/vnd.ms-excel') or ('xls' in arquivo.name):
