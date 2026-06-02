@@ -72,9 +72,9 @@ class Ecommerce:
             'Ver', 'ID do pedido', 'Data de conclusão do pagamento', 'Quantia total lançada (R$)',
             'Preço do produto', 'Valor do Reembolso', 'Ajuste por pagamento via PIX', 'Cupom',
             'Taxa de frete paga pelo comprador', 'Frete cobrado pelo parceiro logístico',
-            'Desconto de frete pela Shopee', 'Incentivo de cupom', 'Taxa de comissão líquida',
-            'Taxa de serviço líquida', 'Taxa de transação', 'Taxa de comissão Afiliados do Vendedor',
-            'Taxa de Devolução Fácil Shopee'
+            'Desconto de frete pela Shopee', 'Voucher subsidiado pelo Seller','Incentivo de cupom',
+            'Taxa de comissão líquida', 'Taxa de serviço líquida', 'Taxa de transação',
+            'Taxa de comissão Afiliados do Vendedor', 'Taxa de Devolução Fácil Shopee'
         ]
 
         aux_df = df.iloc[1:,:].copy().reset_index(drop=True)
@@ -111,6 +111,7 @@ class Ecommerce:
                         'taxa_de_frete_paga_pelo_comprador',
                         'frete_cobrado_pelo_parceiro_logistico',
                         'desconto_de_frete_pela_shopee',
+                        'voucher_subsidiado_pelo_seller',
                         'incentivo_de_cupom',
                         'taxa_de_comissao_liquida',
                         'taxa_de_servico_liquida',
