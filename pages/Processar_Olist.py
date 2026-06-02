@@ -46,6 +46,9 @@ if "disabled" not in st.session_state:
 if "dtvcto" not in st.session_state:
     st.session_state.dtvcto = datetime.now().date()
 
+if "previsao" not in st.session_state:
+    st.session_state.previsao = ""
+
 def processar_revisao(i:int):
     if  (
             f"divergenciah_{i}" in st.session_state
@@ -84,7 +87,7 @@ def finalizar():
     progress_text = "Saindo..."
     my_bar = st.progress(0, text=progress_text)
     for percent_complete in range(100):
-        time.sleep(0.02)
+        time.sleep(0.05)
         my_bar.progress(percent_complete + 1, text=progress_text)
     time.sleep(1)
     my_bar.empty()
@@ -96,12 +99,23 @@ def finalizar():
 def iniciar_processamento():
     st.session_state.disabled = True
 
+def calcular_previsao():
+    previsao_segundos = float(st.secrets["tempo_medio_lcto"]) * (len(st.session_state.data["selection"]["rows"])*2)
+    previsao_minutos = round(previsao_segundos/60)
+    texto = f"{previsao_minutos} minutos" if previsao_minutos > 0 else f"{round(previsao_segundos)} segundos"
+    st.session_state.previsao = f"Previsão: {texto} ({st.secrets["tempo_medio_lcto"]}s por registro)"
+    return
+
 @st.dialog("Confirmação")
 def confirmacao():
+    calcular_previsao()
+    
     if len(st.session_state.data.get("selection",{}).get("rows",[])) == 1:
         st.write(f"Deseja processar o registro selecionado com vencimento para {st.session_state.dtvcto.strftime("%d/%m/%Y")}?")
+        st.caption(st.session_state.previsao,text_alignment="center")
     else:
         st.write(f"Deseja processar os {len(st.session_state.data["selection"]["rows"])} registros selecionados com vencimento para {st.session_state.dtvcto.strftime("%d/%m/%Y")}?")
+        st.caption(st.session_state.previsao,text_alignment="center")
 
     if st.button("Confirmar",type="primary",width='stretch',key="btn_confirmar",disabled=st.session_state.disabled,on_click=iniciar_processamento):        
         processar_selecionados()
@@ -109,7 +123,7 @@ def confirmacao():
     if st.button("Cancelar",type="tertiary",width='stretch'):
         st.rerun()
     
-def processar_selecionados():
+def processar_selecionados():    
     response = None
     with st.spinner("Processando...",show_time=True,width="stretch"):
         st.session_state.remessa = ecomm.extrai_registros(st.session_state.empresa,
