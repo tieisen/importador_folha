@@ -2,3 +2,9 @@ __pycache__/
 *.ipynb
 *.env
 *.ipynb_checkpoints
+*.test.*
+.*.json
+.docs
+.vscode
+remessas/
+.streamlit/

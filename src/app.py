@@ -1,13 +1,16 @@
-from parser import cnab240, excel_vr
+from parser import cnab240, excel
 from src.sankhya import Sankhya
 import time
 import pandas as pd
 import streamlit as st
+from parser.guiasOlist import Arquivo, Layout
+from schema.Itau240 import HeaderArquivo, HeaderLoteO, TrailerLoteO, DetalheO, TrailerArquivo
+from typing import Literal
 
 class App:
 
     def __init__(self):
-        self.tipo_rotina:str['folha' | 'vr']=None
+        self.tipo_rotina:str['folha' | 'vr' | 'olist']=None
 
     async def busca_funcionarios(
             self,
@@ -186,12 +189,15 @@ class App:
         """
 
         rotina = None
-        if arquivo.type == 'application/vnd.ms-excel':
+        if (arquivo.type == 'application/vnd.ms-excel') or ('xls' in arquivo.name):
             self.tipo_rotina = 'vr'
             rotina = self.rotina_vr
         if arquivo.type == 'text/plain':
             self.tipo_rotina = 'folha'
             rotina = self.rotina_folha
+        if arquivo.type == 'text/csv':
+            self.tipo_rotina = 'olist'
+            rotina = self.rotina_olist
         return rotina
 
     @st.cache_resource(show_spinner=False)
@@ -256,7 +262,7 @@ class App:
                 :return lista_lctos: Lista de dicionários contendo os dados dos funcionários.
         """
         
-        parser = excel_vr.ExcelVr()
+        parser = excel.ExcelVr()
         
         my_bar = st.progress(0, text="Carregando arquivo...")
         cabecalho,data_credito,conteudo = parser.ler_arquivo(arquivo)
@@ -300,3 +306,61 @@ class App:
 
         return dados_cabecalho, lista_lctos
 
+    @st.cache_resource(show_spinner=False)
+    def rotina_olist(_self, arquivoCarregado, empresa:Literal['storya', 'outbeauty','compre']) -> bool:
+        """
+            Rotina principal para processar o arquivo de remessa das guias do Olist.
+                :param arquivo: Arquivo enviado pelo usuário
+                :return dados_cabecalho: Dicionário contendo os dados do cabeçalho.
+                :return lista_lctos: Lista de dicionários contendo os dados dos funcionários.
+        """
+
+        my_bar = st.progress(0, text="Carregando arquivo...")
+        arquivo = Arquivo()
+        arquivo.validaDadosBancariosEmpresa(empresa)        
+        arquivo.carregarArquivo(arquivoCarregado,arquivoCarregado.type)
+        time.sleep(1)
+        
+        my_bar.progress(int(100/3*1), text="Gerando remessa...")
+        layout = Layout()
+        layout.comporHeaderArquivo(HeaderArquivo(**arquivo.dados_bancarios))
+        layout.comporHeaderLote(HeaderLoteO(**arquivo.dados_bancarios))
+
+        for i in range(len(arquivo.data)):        
+            layout.comporDetalhe(
+                DetalheO(**{        
+                    "codigoBanco" : arquivo.dados_bancarios.get('codigoBanco'),
+                    "numeroRegistro" : i+1,
+                    "codigoBarras" : arquivo.data.at[i,'chave_pix_codigo_boleto'],
+                    "nome" : arquivo.data.at[i,'fornecedor'],
+                    "dataVcto" : arquivo.data.at[i,'data_vencimento'],
+                    "valorPagar" : arquivo.data.at[i,'valor_documento'],
+                    "dataPgto" : arquivo.data.at[i,'data_vencimento'],
+                    "seuNumero" : arquivo.data.at[i,'numero_documento']
+                })
+            )
+
+        layout.comporTrailerLote(
+            TrailerLoteO(**{
+                "codigoBanco" : arquivo.dados_bancarios.get('codigoBanco'),
+                "totalQtdeRegistros" : arquivo.data.shape[0]+2,
+                "totalValorPgtos" : round(arquivo.data['valor_documento'].sum(),2)
+            })
+        )
+
+        layout.comporTrailerArquivo(
+            TrailerArquivo(**{
+                "codigoBanco" : arquivo.dados_bancarios.get('codigoBanco'),
+                "totalQtdeLotes" : 1,
+                "totalQtdeRegistros" : 4+arquivo.data.shape[0]
+            })
+        )
+        time.sleep(1)
+        
+        my_bar.progress(int(100/3*2), text="Montando arquivo...")
+        layout.montarArquivo()
+        layout.salvarArquivo()
+        
+        my_bar.progress(int(100/3*3), text="Concluído!")
+        
+        return my_bar, layout.caminhoArquivo, layout.nomeArquivo
