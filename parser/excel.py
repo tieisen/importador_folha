@@ -129,7 +129,7 @@ class Ecommerce:
         linha['lcto_pedido'] = pedido_id
         linha['lcto_receita'] = round(float(linha["preco_do_produto"]),2)
         linha['lcto_despesa'] = abs(round(despesa_total,2))        
-        linha['lcto_repasse'] = round(linha['lcto_receita']-despesa_total,2)        
+        linha['lcto_repasse'] = round(linha['lcto_receita']-abs(despesa_total),2)        
         linha['lcto_historico'] = f"Renda do pedido {pedido_id}"
         linha['lcto_data'] = pd.to_datetime(linha["data_de_conclusao_do_pagamento"]).strftime("%Y-%m-%d")
         linha['confirmado'] = self.valida_planilha_vs_calculado_shopee(linha)
@@ -241,9 +241,12 @@ class Ecommerce:
     def processa_dados_shopee(self,df) -> pd.DataFrame:
         
         lista_dfs = []
-        relatorio_summary = df.get("Summary")
-        relatorio_renda = df.get("Renda")
-        relatorio_adjustment = df.get("Adjustment")
+        relatorio_summary = df.get("Summary",pd.DataFrame)
+        relatorio_renda = df.get("Renda",pd.DataFrame)
+        relatorio_adjustment = df.get("Adjustment",pd.DataFrame)
+        
+        if relatorio_summary.empty:
+            raise ValueError("Formato do relatório inválido. Aba Summary não encontrado ou vazio.")
         
         match relatorio_summary.iloc[4,1]:
             case 'shop.storya':
@@ -258,12 +261,12 @@ class Ecommerce:
             case _:
                 raise ValueError(f"Não foi possível identificar a empresa a partir do relatório. Valor encontrado: {relatorio_summary.iloc[4,1]}")
         
-        if relatorio_adjustment:
+        if not relatorio_adjustment.empty:
             df_ajuste = self.tratar_dados_ajustment(relatorio_adjustment)
             df_ajuste = df_ajuste.apply(lambda x: self.extrai_valores_adjustment(x),axis=1)        
             lista_dfs.append(df_ajuste)
 
-        if relatorio_renda:
+        if not relatorio_renda.empty:
             df_renda = self.tratar_dados_renda(relatorio_renda)
             df_renda = df_renda.apply(lambda x: self.extrai_valores_renda(x),axis=1)
             lista_dfs.append(df_renda)
