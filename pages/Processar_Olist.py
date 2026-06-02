@@ -103,7 +103,7 @@ def calcular_previsao():
     previsao_segundos = float(st.secrets["tempo_medio_lcto"]) * (len(st.session_state.data["selection"]["rows"])*2)
     previsao_minutos = round(previsao_segundos/60)
     texto = f"{previsao_minutos} minutos" if previsao_minutos > 0 else f"{round(previsao_segundos)} segundos"
-    st.session_state.previsao = f"Previsão: {texto} ({st.secrets["tempo_medio_lcto"]}s por registro)"
+    st.session_state.previsao = f"Previsão: {texto} (~{st.secrets["tempo_medio_lcto"]}s por registro)"
     return
 
 @st.dialog("Confirmação")
@@ -125,24 +125,28 @@ def confirmacao():
     
 def processar_selecionados():    
     response = None
-    with st.spinner("Processando...",show_time=True,width="stretch"):
-        st.session_state.remessa = ecomm.extrai_registros(st.session_state.empresa,
-                                                          st.session_state.df.loc[st.session_state.data["selection"]["rows"]],
-                                                          st.session_state.dtvcto)
-        import json
-        from datetime import datetime
-        with open(f"remessa_{datetime.now().date().strftime('%Y%m%d')}.test.json","w",encoding='utf-8') as f:
-            json.dump(st.session_state.remessa,f,indent=4,default=str,ensure_ascii=False)
-        
-        if st.session_state.remessa:
-            import requests
-            response = requests.post(url=st.secrets["api_url"],
-                                     json=normalize(st.session_state.remessa))
-    if response and response.status_code == 200:
-        finalizar()
-    else:
-        st.error(f"Erro {response.status_code}: Ocorreu um erro ao processar os registros. Tente novamente mais tarde.\n{response.json()}",icon="❌")
-    st.session_state.disabled=False
+    try:
+        with st.spinner("Processando...",show_time=True,width="stretch"):
+            st.session_state.remessa = ecomm.extrai_registros(st.session_state.empresa,
+                                                            st.session_state.df.loc[st.session_state.data["selection"]["rows"]],
+                                                            st.session_state.dtvcto)
+            import json
+            from datetime import datetime
+            with open(f"remessas/olist/{st.session_state.empresa.replace(" ","")}_{st.session_state.loja.replace(" ","")}_{datetime.now().date().strftime('%Y%m%d')}.test.json","w",encoding='utf-8') as f:
+                json.dump(st.session_state.remessa,f,indent=4,default=str,ensure_ascii=False)
+            
+            if st.session_state.remessa:
+                import requests
+                response = requests.post(url=st.secrets["api_url"],
+                                        json=normalize(st.session_state.remessa))
+        if response and response.status_code == 200:
+            finalizar()
+        else:
+            st.error(f"Erro {response.status_code}: Ocorreu um erro ao processar os registros. Tente novamente mais tarde.\n{response.json()}",icon="❌")
+        st.session_state.disabled=False
+    except Exception as e:
+        st.error(f"Erro: {str(e)}",icon="❌")
+        st.session_state.disabled=False
 
 def find_non_serializable(obj, path="root"):
     if isinstance(obj, dict):
@@ -216,6 +220,13 @@ def mostrar_aviso():
         case _:
             pass
     return
+
+# Carrega os arquivos de ajuda
+with open(st.secrets["path_ajuda_olist"], "r", encoding="utf-8") as f:
+    md_olist = f.read()
+with st.sidebar:
+    st.header("ℹ️ Como utilizar:")
+    st.markdown(md_olist)
 
 st.title("Processar títulos de E-commerce")
 
