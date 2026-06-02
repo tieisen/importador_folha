@@ -1,6 +1,7 @@
 pandas==2.3.2
 python-dotenv==1.1.1
 requests==2.32.4
-streamlit==1.51.0
+streamlit=1.58
 openpyxl
+python-calamine==0.6.2
 pydantic==2.8.2

@@ -122,8 +122,8 @@ def processar_selecionados():
         
         if st.session_state.remessa:
             import requests
-            url = "http://192.168.0.166:8180/financeiro/processar"
-            response = requests.post(url,json=normalize(st.session_state.remessa))
+            response = requests.post(url=st.secrets["api_url"],
+                                     json=normalize(st.session_state.remessa))
     if response and response.status_code == 200:
         finalizar()
     else:
