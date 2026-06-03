@@ -65,7 +65,6 @@ if st.session_state.arquivo:
             
             if download_btn:
                 my_bar.empty()
-                st.cache_resource.clear()
                 st.session_state.arquivo = None
                 empresa=None
                 if os.path.exists(caminho_arquivo):
@@ -77,7 +76,6 @@ if st.session_state.arquivo:
             my_bar=None
             nome_arquivo=None
             download_btn=None
-            st.cache_resource.clear()            
     else:        
         # Roda a rotina de leitura do arquivo
         if st.session_state.dados_cabecalho.empty:
@@ -132,7 +130,6 @@ if st.session_state.arquivo:
                     if registros_enviados:
                         st.success(f'{registros_enviados} registros enviados com sucesso!', icon="✅")
                         time.sleep(2)
-                        st.cache_resource.clear()
                         st.session_state.arquivo = None
                         tipo_lcto=None
                         st.session_state.dados_cabecalho = pd.DataFrame()
@@ -149,4 +146,3 @@ if not st.session_state.arquivo and any([not st.session_state.dados_cabecalho.em
     empresa=None
     my_bar=None
     nome_arquivo=None
-    st.cache_resource.clear()
