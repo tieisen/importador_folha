@@ -262,27 +262,26 @@ class Ecommerce:
         """
         payload:list[dict] = []
         
-        for i in df.index.to_list():
+        for linha in df.itertuples():
             receita:dict = {}
-            despesa:dict = {}            
-            linha = df.iloc[i,:]
+            despesa:dict = {}
             
             receita = {
-                "valor": linha["lcto_receita"],
-                "descricao": linha["lcto_historico"],
-                "data": linha["lcto_data"],
+                "valor": linha.lcto_receita,
+                "descricao": linha.lcto_historico,
+                "data": linha.lcto_data,
                 "pendente": True
-            } if not pd.isna(linha["lcto_receita"]) else None
+            } if not pd.isna(linha.lcto_receita) else None
 
             despesa = {
-                "valor": linha["lcto_despesa"],
-                "descricao": linha["lcto_historico"],
-                "data": linha["lcto_data"],
+                "valor": linha.lcto_despesa,
+                "descricao": linha.lcto_historico,
+                "data": linha.lcto_data,
                 "pendente": True
-            } if not pd.isna(linha["lcto_despesa"]) else None
+            } if not pd.isna(linha.lcto_despesa) else None
                 
             payload.append({
-                "id_pedido": linha["lcto_pedido"],
+                "id_pedido": linha.lcto_pedido,
                 "receita": receita,
                 "despesa": despesa
             })
