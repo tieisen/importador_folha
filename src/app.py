@@ -200,7 +200,6 @@ class App:
             rotina = self.rotina_olist
         return rotina
 
-    @st.cache_resource(show_spinner=False)
     async def rotina_folha(_self, arquivo) -> tuple[pd.DataFrame,pd.DataFrame]:
         """
             Rotina principal para processar o arquivo CNAB e retornar os dados formatados.
@@ -253,7 +252,6 @@ class App:
 
         return dados_cabecalho, lista_lctos
 
-    @st.cache_resource(show_spinner=False)
     async def rotina_vr(_self, arquivo) -> tuple[pd.DataFrame,pd.DataFrame]:
         """
             Rotina principal para processar o arquivo Excel e retornar os dados formatados.
@@ -306,7 +304,6 @@ class App:
 
         return dados_cabecalho, lista_lctos
 
-    @st.cache_resource(show_spinner=False)
     def rotina_olist(_self, arquivoCarregado, empresa:Literal['storya', 'outbeauty','compre']) -> bool:
         """
             Rotina principal para processar o arquivo de remessa das guias do Olist.

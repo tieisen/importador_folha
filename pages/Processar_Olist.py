@@ -49,6 +49,29 @@ if "dtvcto" not in st.session_state:
 if "previsao" not in st.session_state:
     st.session_state.previsao = ""
 
+OLIST_SESSION_KEYS = {
+    "done",
+    "empresa",
+    "loja",
+    "df",
+    "data",
+    "aviso",
+    "andamento",
+    "remessa",
+    "disabled",
+    "dtvcto",
+    "previsao",
+    "file_uploader",
+    "btn_confirmar",
+    "btn_acao",
+}
+OLIST_SESSION_PREFIXES = ("divergencia_", "receita_", "despesa_", "repasse_")
+
+def limpar_estado_olist():
+    for key in list(st.session_state.keys()):
+        if key in OLIST_SESSION_KEYS or str(key).startswith(OLIST_SESSION_PREFIXES):
+            del st.session_state[key]
+
 def processar_revisao(i:int):
     """ Valida os valores de receita e despesa após input do usuário
         :param i (int): Índice do registro a ser validado
@@ -99,9 +122,7 @@ def finalizar():
         my_bar.progress(percent_complete + 1, text=progress_text)
     time.sleep(1)
     my_bar.empty()
-    # Delete all the items in Session state
-    for key in st.session_state.keys():
-        del st.session_state[key]
+    limpar_estado_olist()
     st.rerun()  
 
 def iniciar_processamento():
@@ -212,8 +233,7 @@ def valida_arquivo_carregado():
        Se não houver, limpa os dados da sessão para evitar inconsistências.
     """
     if not st.session_state.file_uploader:
-        for key in st.session_state.keys():
-            del st.session_state[key]
+        limpar_estado_olist()
 
 def mostrar_aviso():
     """Exibe o aviso configurado na sessão.
